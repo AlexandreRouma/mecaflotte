@@ -176,6 +176,11 @@ def circu(u,v,x,y):
     if vcount < 3:
         print("ERROR: At least two nodes are required to calculate the circulation")
         exit(-1)
+
+    # Verify that curve is closed
+    if x[0] != x[vcount-1] or y[0] != y[vcount-1]:
+        print("ERROR: Curve must be closed")
+        exit(-1)
     
     # Prepare work values
     c = 0.0
@@ -228,23 +233,50 @@ def force(p,x,y):
         print("ERROR: At least two nodes are required to calculate the circulation")
         exit(-1)
 
-    # Add up all pressure forces
-    fx = 0
-    fy = 0
-    lastVec = np.array([u[0], v[0]])
+    # Verify that curve is closed
+    if x[0] != x[vcount-1] or y[0] != y[vcount-1]:
+        print("ERROR: Curve must be closed")
+        exit(-1)
+
+    # Prepare work values
+    f = np.array([0.0, 0.0])
+    zvec = np.array([0.0, 0.0, 1.0])
+    lastPress = p[0]
     lastPos = np.array([x[0], y[0]])
 
-    return fx, fy
+    # Add up all the forces around the curve
+    for i in range(1, vcount):
+        # Get new node position and pressure
+        press = p[i]
+        pos = np.array([x[i], y[i]])
 
-A, b, p = buildLaplacianSystem()
+        # Average out the pressure over the source
+        apress = (press + lastPress) / 2.0
 
-x = scipy.sparse.linalg.spsolve(A,b)
+        # Calculate normal to the curve
+        tan = pos - lastPos
+        vec3d = np.array([-tan[0], -tan[1], 0])
+        norm = np.cross(vec3d, zvec)
+        norm = norm * (1.0 / np.linalg.norm(norm))
+        tlen = np.linalg.norm(tan)
 
-out = np.zeros((NUM_LINES, NUM_ROWS))
-for i in range(0, len(p)):
-    out[int(p[i][0])][int(p[i][1])] = x[i]
+        # Add force
+        f += norm[0:2] * (apress * tlen)
 
-print(out)
+        lastPress = press
+        lastPos = pos
 
-plt.imshow(out)
-plt.show()
+    return f[0], f[1]
+
+# A, b, p = buildLaplacianSystem()
+
+# x = scipy.sparse.linalg.spsolve(A,b)
+
+# out = np.zeros((NUM_LINES, NUM_ROWS))
+# for i in range(0, len(p)):
+#     out[int(p[i][0])][int(p[i][1])] = x[i]
+
+# print(out)
+
+# plt.imshow(out)
+# plt.show()
