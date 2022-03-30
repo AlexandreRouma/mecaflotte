@@ -1,4 +1,3 @@
-from binascii import b2a_base64
 import numpy as np
 import scipy as sp
 import scipy.sparse
