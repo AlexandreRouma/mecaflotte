@@ -1,0 +1,5 @@
+# Enums
+NULL                = 0
+NODE_TYPE_EXTERNAL  = 0
+NODE_TYPE_INTERNAL  = 1
+NODE_TYPE_LIMIT     = 2
