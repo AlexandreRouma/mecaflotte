@@ -5,11 +5,13 @@ from deriv import deriv
 # => Calculate velocity at each node using the flow matrix <=
 # flowMtx   Flow matrix
 # domMtx    Domain matrix
-# rows:     Number of rows
-# columns:  Number of columns
+# dx:       X space increment
+# dy:       Y space increment
 # returns:  u: Matrix of horizontal velocities, v: Matrix of verical velocities
-def velocity(flowMtx, domMtx, rows, columns):
+def velocity(domMtx, flowMtx, dx, dy):
     # Allocate horizontal and vertical speed matrices
+    rows = domMtx.shape[0]
+    columns = domMtx.shape[1]
     u = np.zeros((rows, columns))
     v = np.zeros((rows, columns))
 
@@ -51,7 +53,7 @@ def velocity(flowMtx, domMtx, rows, columns):
                 rval = flowMtx[l][c+1]
 
             # Calculate derivatives
-            u[l][c] = deriv(uval, cval, dval, utype, ctype, dtype, 1.0)
-            v[l][c] = -deriv(lval, cval, rval, ltype, ctype, rtype, 1.0)
+            u[l][c] = deriv(uval, cval, dval, utype, ctype, dtype, dx)
+            v[l][c] = -deriv(lval, cval, rval, ltype, ctype, rtype, dy)
     
     return u, v

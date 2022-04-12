@@ -3,18 +3,20 @@ import scipy.sparse
 import scipy.sparse.linalg
 import matplotlib.pyplot as plt
 import defs
+import time
 
 from sameShape2D import sameShape2D
-from buildSystem import buildSystem
-from plotNodes import plotNodes
+from laplace import laplace
 from velocity import velocity
 
+start = time.time()
+
 # Configuration
-CL_PATH     = "3-cl.txt"
+CL_PATH     = "CL/3-cl.txt"
 DOM_PATH    = "CL/3-dom.txt"
 NUM_PATH    = "CL/3-num.txt"
-DX          = 0.5
-DY          = 0.5
+DX          = 0.01
+DY          = 0.01
 
 # Load simulation data
 clMtx = np.loadtxt(CL_PATH)
@@ -29,25 +31,33 @@ if not sameShape2D(domMtx, numMtx) or not sameShape2D(domMtx, clMtx):
     print("ERROR: Input matrices are not of the same shape!")
     exit(-1)
 
-# Solve for flow function
-A, b, p = buildSystem(clMtx, domMtx, numMtx)
-sol = scipy.sparse.linalg.spsolve(A,b)
-
 # Generate dens matrix of values for ease of manipulation
-flowMtx = plotNodes(sol, p, NUM_ROWS, NUM_COLUMNS)
+phi = laplace(clMtx, domMtx, numMtx)
 
 # Calculate velocity at each node
-u, v = velocity(flowMtx, domMtx, NUM_ROWS, NUM_COLUMNS)
+u, v = velocity(domMtx, phi, DX, DY)
+
+end = time.time()
+
+print(end - start)
 
 # Display output
-X = np.arange(0, NUM_COLUMNS)
-Y = np.arange(0, NUM_ROWS)
-AX, AY = np.meshgrid(X, Y)
-plt.streamplot(AX, AY, u, v)
-# plt.subplot(2, 1, 1)
-# plt.imshow(u, cmap='turbo')
+# plt.subplot(2, 2, 1)
+# X = np.arange(0, NUM_COLUMNS)
+# Y = np.arange(0, NUM_ROWS)
+# AX, AY = np.meshgrid(X, Y)
+# plt.streamplot(AX, AY, u, v)
+
+# plt.subplot(2, 2, 2)
+# plt.imshow(phi, cmap='turbo')
 # plt.colorbar()
-# plt.subplot(2, 1, 2)
-# plt.imshow(np.abs(v), cmap='turbo')
+
+# plt.subplot(2, 2, 3)
+plt.imshow(v, cmap='turbo')
+plt.colorbar()
+
+# plt.subplot(2, 2, 4)
+# plt.imshow(v, cmap='turbo')
 # plt.colorbar()
+
 plt.show()
