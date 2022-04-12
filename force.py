@@ -31,9 +31,6 @@ def force(p,x,y):
         press = p[i]
         pos = np.array([x[i], y[i]])
 
-        # Average out the pressure over the source
-        apress = (press + lastPress) / 2.0
-
         # Calculate normal to the curve
         tan = pos - lastPos
         vec3d = np.array([-tan[0], -tan[1], 0])
@@ -42,9 +39,10 @@ def force(p,x,y):
         tlen = np.linalg.norm(tan)
 
         # Add force
+        apress = (press + lastPress) / 2.0
         f += norm[0:2] * (apress * tlen)
 
         lastPress = press
         lastPos = pos
 
-    return f[0], f[1]
+    return np.trapz(p,y), np.trapz(p,x)
